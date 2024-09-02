@@ -1,28 +1,53 @@
-const COMPLETE_HANGUL_START: char = '가';
-const COMPLETE_HANGUL_END: char = '힣';
+// References
+// http://www.unicode.org/versions/Unicode9.0.0/ch03.pdf#M9.32468.Heading.310.Combining.Jamo.Behavior
 
-const CHOSEONGS: [char; 19] = [
+/// 초성 개수
+const L_COUNT: u32 = 0x13;
+/// 중성 개수
+const V_COUNT: u32 = 0x15;
+/// 종성 개수
+const T_COUNT: u32 = 0x1C;
+
+/// 중성과 종성의 조합 개수
+const N_COUNT: u32 = V_COUNT * T_COUNT;
+
+/// 초성과 중성, 종성의 조합 개수
+///
+/// 가능한 한글 음절의 경우의 수
+const S_COUNT: u32 = L_COUNT * N_COUNT;
+
+/// 완성형 한글 시작
+///
+/// '가'
+const S_BASE: u32 = 0xAC00;
+/// 완성형 한글 끝
+///
+/// '힣'
+const S_LAST: u32 = S_BASE + S_COUNT - 1;
+
+/// 초성 시작
+///
+/// 'ㄱ'
+const L_BASE: u32 = 0x1100;
+/// 초성 끝
+///
+/// 'ㅎ'
+const L_LAST: u32 = L_BASE + L_COUNT - 1;
+
+/// 중성 시작
+const V_BASE: u32 = 0x1161;
+/// 중성 끝
+const V_LAST: u32 = V_BASE + V_COUNT - 1;
+
+/// 종성 시작
+const T_BASE: u32 = 0x11A7;
+/// 종성 끝
+const T_LAST: u32 = T_BASE + T_COUNT - 1;
+
+const CHOSEONGS: [char; L_COUNT as usize] = [
   'ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ',
   'ㅌ', 'ㅍ', 'ㅎ',
 ];
-
-// http://www.unicode.org/versions/Unicode9.0.0/ch03.pdf#M9.32468.Heading.310.Combining.Jamo.Behavior
-const S_BASE: u32 = 0xAC00;
-const L_BASE: u32 = 0x1100;
-const V_BASE: u32 = 0x1161;
-const T_BASE: u32 = 0x11A7;
-
-const L_COUNT: u32 = 19; // NUMBER_OF_CHOSEONGS
-const V_COUNT: u32 = 21; // NUMBER_OF_JUNGSEONG
-const T_COUNT: u32 = 28; // NUMBER_OF_JONGSEONG
-
-const N_COUNT: u32 = V_COUNT * T_COUNT;
-const S_COUNT: u32 = L_COUNT * N_COUNT;
-
-const S_LAST: u32 = S_BASE + S_COUNT - 1;
-// const L_LAST: u32 = L_BASE + L_COUNT - 1;
-// const V_LAST: u32 = V_BASE + V_COUNT - 1;
-// const T_LAST: u32 = T_BASE + T_COUNT - 1;
 
 pub struct Decompose;
 
