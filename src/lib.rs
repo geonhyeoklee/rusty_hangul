@@ -6,3 +6,5 @@ mod decompose;
 mod jongseong;
 #[allow(dead_code)]
 mod jungseong;
+#[allow(dead_code)]
+mod nfd;

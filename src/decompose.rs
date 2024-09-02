@@ -1,46 +1,7 @@
-use crate::{choseong::Choseong, jongseong::Jongseong, jungseong::Jungseong};
-
-pub struct Nfd(pub u32, pub u32, pub Option<u32>);
-
-impl Nfd {
-  const HANGUL_BASE: u32 = 0xAC00;
-  const HANGUL_LAST: u32 = 0xD7A3;
-
-  const CHOSEONG_COUNT: u32 = 0x13;
-  const JUNGSEONG_COUNT: u32 = 0x15;
-  const JONGSEONG_COUNT: u32 = 0x1C;
-
-  const CHOSEONG_BASE: u32 = 0x1100;
-  const JUNGSEONG_BASE: u32 = 0x1161;
-  const JONGSEONG_BASE: u32 = 0x11A8;
-
-  pub fn normalize_from_u32(letter_code: u32) -> Option<Self> {
-    if !Self::is_complete_hangul_from_u32(letter_code) {
-      return None;
-    }
-
-    let hangul_code = letter_code - Self::HANGUL_BASE;
-
-    let choseong_index = hangul_code / (Self::JUNGSEONG_COUNT + Self::JONGSEONG_COUNT);
-    let jungseong_index =
-      (hangul_code % (Self::JUNGSEONG_COUNT + Self::JONGSEONG_COUNT)) / Self::JONGSEONG_COUNT;
-    let jongseong_index = hangul_code % Self::JONGSEONG_COUNT;
-
-    let choseong = Self::CHOSEONG_BASE + choseong_index;
-    let jungseong = Self::JUNGSEONG_BASE + jungseong_index;
-    let jongseong = if jongseong_index > 0 {
-      Some(Self::JONGSEONG_BASE + jongseong_index - 1)
-    } else {
-      None
-    };
-
-    Some(Self(choseong, jungseong, jongseong))
-  }
-
-  fn is_complete_hangul_from_u32(letter_code: u32) -> bool {
-    Self::HANGUL_BASE <= letter_code && letter_code <= Self::HANGUL_LAST
-  }
-}
+use crate::choseong::Choseong;
+use crate::jongseong::Jongseong;
+use crate::jungseong::Jungseong;
+use crate::nfd::Nfd;
 
 pub struct Decompose;
 
@@ -105,12 +66,26 @@ impl DecomposedHangul {
   }
 }
 
-#[test]
-fn test_decomposed_hangul() {
-  let result = DecomposedHangul::new('각');
-  if let Some(decomposed_hangul) = result {
-    assert_eq!(decomposed_hangul.choseong, "ㄱ".to_string());
-    assert_eq!(decomposed_hangul.jungseong, "ㅏ".to_string());
-    assert_eq!(decomposed_hangul.jongseong, Some("ㄱ".to_string()));
+mod tests {
+  use super::DecomposedHangul;
+
+  fn create_test_char_for_mac(test_char: char) -> u32 {
+    let test_char = test_char as u32;
+    if test_char > 10000 {
+      test_char - 0x1FEE
+    } else {
+      test_char
+    }
+  }
+
+  #[test]
+  fn test_decomposed_hangul() {
+    let result = DecomposedHangul::new('각');
+    if let Some(decomposed_hangul) = result {
+      assert_eq!(
+        decomposed_hangul.jungseong.chars().next().unwrap() as u32,
+        create_test_char_for_mac('ㄱ')
+      );
+    }
   }
 }

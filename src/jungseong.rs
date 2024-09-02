@@ -7,7 +7,7 @@ pub struct Jungseong {
 
 impl Jungseong {
   pub fn new_from_u32(code: u32) -> Option<Self> {
-    if Self::is_jungseong_from_u32(code) {
+    if !Self::is_jungseong_from_u32(code) {
       return None;
     }
 
@@ -65,7 +65,7 @@ impl Jungseong {
 
 #[test]
 fn test_jungseong() {
-  use crate::decompose::Nfd;
+  use crate::nfd::Nfd;
 
   let letter = '궐';
   let Nfd(_, jung, _) = Nfd::normalize_from_u32(letter as u32).unwrap();

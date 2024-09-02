@@ -7,7 +7,7 @@ pub struct Jongseong {
 
 impl Jongseong {
   pub fn new_from_u32(code: u32) -> Option<Self> {
-    if Self::is_jongseong_from_u32(code) {
+    if !Self::is_jongseong_from_u32(code) {
       return None;
     }
 
