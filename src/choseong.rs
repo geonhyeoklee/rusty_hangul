@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub struct Choseong {
   pub value: char,
   pub code: u32,
@@ -25,5 +26,29 @@ impl Choseong {
     const CHOSEONG_BASE: u32 = 0x1100;
     const CHOSEONG_LAST: u32 = 0x1112;
     CHOSEONG_BASE <= choseong_code && choseong_code <= CHOSEONG_LAST
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_choseong() {
+    use crate::nfd::Nfd;
+
+    let letter = '궑';
+    let Nfd(choseong_code, _, _) = Nfd::normalize_from_u32(letter as u32).unwrap();
+    let choseong = Choseong::new_from_u32(choseong_code).unwrap();
+
+    assert_eq!(choseong.code, 0x1100);
+    assert_eq!(
+      choseong
+        .decomposed_string
+        .chars()
+        .map(|c| c as u32)
+        .collect::<Vec<u32>>(),
+      vec![0x1100]
+    )
   }
 }

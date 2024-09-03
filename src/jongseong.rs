@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub struct Jongseong {
   pub value: char,
   pub code: u32,
@@ -29,6 +30,8 @@ impl Jongseong {
     })
   }
 
+  // TODO: 같은 한글 자음이어도 초성의 유니코드와 종성의 유니코드는 다르다.
+  // TODO: 종성을 분해한 결과는 한글 자음이므로 초성도 될 수 있기 때문에 어느 유니코드로 분해할지 고민이다.
   fn decompose_jongseong_from_u32(jongseong_code: &u32) -> Vec<u32> {
     match jongseong_code {
       0x20 => vec![0x20],             // ' '
@@ -67,5 +70,31 @@ impl Jongseong {
     const JONGSEONG_BASE: u32 = 0x11A8;
     const JONGSEONG_LAST: u32 = 0x11C2;
     JONGSEONG_BASE <= jongseong_code && jongseong_code <= JONGSEONG_LAST
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_jongseong() {
+    use crate::nfd::Nfd;
+
+    let letter = '궑';
+    let Nfd(_, _, jongseong_code) = Nfd::normalize_from_u32(letter as u32).unwrap();
+    if let Some(jongseong_code) = jongseong_code {
+      let jongseong = Jongseong::new_from_u32(jongseong_code).unwrap();
+
+      assert_eq!(jongseong.code, 0x11B0);
+      assert_eq!(
+        jongseong
+          .decomposed_string
+          .chars()
+          .map(|c| c as u32)
+          .collect::<Vec<u32>>(),
+        vec![0x11AF, 0x11A8]
+      )
+    }
   }
 }

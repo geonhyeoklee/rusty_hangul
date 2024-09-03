@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub struct Jungseong {
   pub value: char,
   pub code: u32,
@@ -63,28 +64,33 @@ impl Jungseong {
   }
 }
 
-#[test]
-fn test_jungseong() {
-  use crate::nfd::Nfd;
+#[cfg(test)]
+mod tests {
+  use super::*;
 
-  let letter = '궐';
-  let Nfd(_, jung, _) = Nfd::normalize_from_u32(letter as u32).unwrap();
-  let jungseong = Jungseong::new_from_u32(jung).unwrap();
+  #[test]
+  fn test_jungseong() {
+    use crate::nfd::Nfd;
 
-  assert_eq!(
-    jungseong
-      .decomposed_string
-      .chars()
-      .map(|c| c as u32)
-      .collect::<Vec<u32>>(),
-    "ㅜㅓ"
-      .chars()
-      // Mac OS에서 글자 하나의 자음마다 0x1FEE 값 만큼 더해지는 버그가 있다.
-      .map(|c| if Jungseong::is_jungseong_from_u32(c as u32) {
-        c as u32
-      } else {
-        c as u32 - 0x1FEE
-      })
-      .collect::<Vec<u32>>()
-  )
+    let letter = '궐';
+    let Nfd(_, jungseong_code, _) = Nfd::normalize_from_u32(letter as u32).unwrap();
+    let jungseong = Jungseong::new_from_u32(jungseong_code).unwrap();
+
+    assert_eq!(
+      jungseong
+        .decomposed_string
+        .chars()
+        .map(|c| c as u32)
+        .collect::<Vec<u32>>(),
+      "ㅜㅓ"
+        .chars()
+        // Mac OS에서 글자 하나의 자음마다 0x1FEE 값 만큼 더해지는 버그가 있다.
+        .map(|c| if Jungseong::is_jungseong_from_u32(c as u32) {
+          c as u32
+        } else {
+          c as u32 - 0x1FEE
+        })
+        .collect::<Vec<u32>>()
+    )
+  }
 }
