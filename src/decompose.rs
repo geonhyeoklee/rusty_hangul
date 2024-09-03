@@ -7,16 +7,6 @@ use crate::utils::is_complete_hangul_from_u32;
 pub struct Decompose;
 
 impl Decompose {
-  // pub fn decompose(string: String) -> String {
-  //   let decomposed_hanguls = Self::decompose_to_groups(string);
-
-  //   decomposed_hanguls
-  //     .into_iter()
-  //     .fold("".to_string(), |hanguls, decomposed_hangul| {
-  //       return hanguls + &decomposed_hangul.join("");
-  //     })
-  // }
-
   pub fn decompose_to_groups(string: String) -> Vec<Vec<String>> {
     string
       .chars()
