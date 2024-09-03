@@ -2,37 +2,46 @@ use crate::choseong::Choseong;
 use crate::jongseong::Jongseong;
 use crate::jungseong::Jungseong;
 use crate::nfd::Nfd;
+use crate::utils::is_complete_hangul_from_u32;
 
-// pub struct Decompose;
+pub struct Decompose;
 
-// impl Decompose {
-//   pub fn decompose(string: String) -> String {
-//     let decomposed_hanguls = Self::decompose_to_groups(string);
+impl Decompose {
+  // pub fn decompose(string: String) -> String {
+  //   let decomposed_hanguls = Self::decompose_to_groups(string);
 
-//     decomposed_hanguls
-//       .into_iter()
-//       .fold("".to_string(), |hanguls, decomposed_hangul| {
-//         return hanguls + &decomposed_hangul.join("");
-//       })
-//   }
+  //   decomposed_hanguls
+  //     .into_iter()
+  //     .fold("".to_string(), |hanguls, decomposed_hangul| {
+  //       return hanguls + &decomposed_hangul.join("");
+  //     })
+  // }
 
-//   pub fn decompose_to_groups(string: String) -> Vec<Vec<String>> {
-//     string
-//       .chars()
-//       .map(|letter| {
-//         let decomposed_hangul = DecomposedHangul::new(letter).unwrap();
-//         let mut group = vec![
-//           decomposed_hangul.choseong.to_string(),
-//           decomposed_hangul.jungseong.to_string(),
-//         ];
-//         if let Some(jongseong) = decomposed_hangul.jongseong {
-//           group.push(jongseong.to_string())
-//         }
-//         return group;
-//       })
-//       .collect()
-//   }
-// }
+  pub fn decompose_to_groups(string: String) -> Vec<Vec<String>> {
+    string
+      .chars()
+      .map(|letter| {
+        let decomposed_hangul = DecomposedHangul::new(letter);
+
+        if let Some(decomposed_hangul) = decomposed_hangul {
+          let choseong = decomposed_hangul.choseong.decomposed_string;
+          let jungseong = decomposed_hangul.jungseong.decomposed_string;
+
+          let mut group = vec![choseong, jungseong];
+
+          let jongseong = decomposed_hangul.jongseong;
+          if let Some(jongseong) = jongseong {
+            group.push(jongseong.decomposed_string)
+          }
+
+          return group;
+        } else {
+          vec![letter.to_string()]
+        }
+      })
+      .collect()
+  }
+}
 
 #[derive(Debug)]
 pub struct DecomposedHangul {
@@ -42,46 +51,65 @@ pub struct DecomposedHangul {
 }
 
 impl DecomposedHangul {
-  fn new(letter: char) -> Option<DecomposedHangul> {
+  pub fn new(letter: char) -> Option<DecomposedHangul> {
     Self::new_inner(letter)
   }
 
   fn new_inner(letter: char) -> Option<DecomposedHangul> {
     let letter = letter as u32;
-    let Nfd(choseong_code, jungseong_code, jongseong_code) =
-      Nfd::normalize_from_u32(letter).unwrap();
-    let choseong = Choseong::new_from_u32(choseong_code).unwrap();
-    let jungseong = Jungseong::new_from_u32(jungseong_code).unwrap();
-    let jongseong = Jongseong::new_from_u32(jongseong_code.unwrap());
+
+    if !is_complete_hangul_from_u32(letter) {
+      return None;
+    }
+
+    let Nfd(choseong_code, jungseong_code, jongseong_code) = Nfd::normalize(letter);
+    let choseong = Choseong::new(choseong_code);
+    let jungseong = Jungseong::new(jungseong_code);
+
+    let mut jongseong = None;
+    if let Some(jongseong_code) = jongseong_code {
+      jongseong = Jongseong::maybe_new(jongseong_code);
+    }
 
     Some(Self {
       choseong,
       jungseong,
-      jongseong: if let Some(jongseong) = jongseong {
-        Some(jongseong)
-      } else {
-        None
-      },
+      jongseong,
     })
   }
 }
 
 #[cfg(test)]
 mod tests {
-  use super::DecomposedHangul;
+  use super::*;
 
-  fn create_test_char_for_mac(test_char: char) -> u32 {
-    let test_char = test_char as u32;
-    if test_char > 10000 {
-      test_char - 0x1FEE
-    } else {
-      test_char
-    }
+  #[test]
+  fn test_decompose_to_groups() {
+    let testcase = "버그가 싫다".to_string();
+    let result = Decompose::decompose_to_groups(testcase);
+    let expected = vec![
+      vec!["ᄇ", "ᅥ"],
+      vec!["ᄀ", "ᅳ"],
+      vec!["ᄀ", "ᅡ"],
+      vec![" "],
+      vec!["ᄉ", "ᅵ", "ᆯᇂ"],
+      vec!["ᄃ", "ᅡ"],
+    ];
+    assert_eq!(result, expected);
   }
 
   #[test]
   fn test_decomposed_hangul() {
     let result = DecomposedHangul::new('각');
-    if let Some(decomposed_hangul) = result {}
+    if let Some(decomposed_hangul) = result {
+      let choseong = decomposed_hangul.choseong.unicode;
+      let jungseong = decomposed_hangul.jungseong.unicode;
+      let jongseong = decomposed_hangul.jongseong.unwrap().unicode;
+
+      assert_eq!(choseong, 0x1100); // 'ㄱ'
+      assert_eq!(jungseong, 0x1161); // 'ㅏ'
+      assert_eq!(jongseong, 0x11A8); // 'ㄱ'
+      assert_ne!(choseong, jongseong); // 초성과 종성의 'ㄱ' 유니코드는 다름
+    }
   }
 }

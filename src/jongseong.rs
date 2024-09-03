@@ -1,23 +1,27 @@
 #[derive(Debug)]
 pub struct Jongseong {
   pub value: char,
-  pub code: u32,
+  pub unicode: u32,
   pub decomposed: Vec<u32>,
   pub decomposed_string: String,
 }
 
 impl Jongseong {
-  pub fn new_from_u32(code: u32) -> Option<Self> {
-    if !Self::is_jongseong_from_u32(code) {
+  pub fn maybe_new(unicode: u32) -> Option<Self> {
+    Self::maybe_new_from_u32(unicode)
+  }
+
+  fn maybe_new_from_u32(unicode: u32) -> Option<Self> {
+    if !Self::is_jongseong_from_u32(unicode) {
       return None;
     }
 
-    let value = unsafe { std::char::from_u32_unchecked(code) };
-    let decomposed = Self::decompose_jongseong_from_u32(&code);
+    let value = unsafe { std::char::from_u32_unchecked(unicode) };
+    let decomposed = Self::decompose_jongseong_from_u32(&unicode);
 
     Some(Self {
       value,
-      code,
+      unicode,
       decomposed: decomposed.clone(),
       decomposed_string: decomposed
         .into_iter()
@@ -82,11 +86,11 @@ mod tests {
     use crate::nfd::Nfd;
 
     let letter = '궑';
-    let Nfd(_, _, jongseong_code) = Nfd::normalize_from_u32(letter as u32).unwrap();
+    let Nfd(_, _, jongseong_code) = Nfd::normalize(letter as u32);
     if let Some(jongseong_code) = jongseong_code {
-      let jongseong = Jongseong::new_from_u32(jongseong_code).unwrap();
+      let jongseong = Jongseong::maybe_new(jongseong_code).unwrap();
 
-      assert_eq!(jongseong.code, 0x11B0);
+      assert_eq!(jongseong.unicode, 0x11B0);
       assert_eq!(
         jongseong
           .decomposed_string

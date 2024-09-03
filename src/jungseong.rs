@@ -1,33 +1,41 @@
+use crate::utils::is_jungseong_from_u32;
+
 #[derive(Debug)]
 pub struct Jungseong {
   pub value: char,
-  pub code: u32,
+  pub unicode: u32,
   pub decomposed: Vec<u32>,
   pub decomposed_string: String,
 }
 
 impl Jungseong {
-  pub fn new_from_u32(code: u32) -> Option<Self> {
-    if !Self::is_jungseong_from_u32(code) {
-      return None;
+  pub fn new(unicode: u32) -> Self {
+    Self::new_from_u32(unicode)
+  }
+
+  fn new_from_u32(unicode: u32) -> Self {
+    if !is_jungseong_from_u32(unicode) {
+      panic!()
     }
 
-    let value = unsafe { std::char::from_u32_unchecked(code) };
-    let decomposed = Self::decompose_jungseong_from_u32(&code);
+    let value = unsafe { std::char::from_u32_unchecked(unicode) };
+    let decomposed = Self::decompose_jungseong_from_u32(&unicode);
+    let decomposed_string = decomposed
+      .clone()
+      .into_iter()
+      .map(|code| {
+        let character = char::from_u32(code).unwrap();
+        character.to_string()
+      })
+      .collect::<Vec<String>>()
+      .join("");
 
-    Some(Self {
+    Self {
       value,
-      code,
-      decomposed: decomposed.clone(),
-      decomposed_string: decomposed
-        .into_iter()
-        .map(|code| {
-          let character = char::from_u32(code).unwrap();
-          character.to_string()
-        })
-        .collect::<Vec<String>>()
-        .join(""),
-    })
+      unicode,
+      decomposed,
+      decomposed_string,
+    }
   }
 
   fn decompose_jungseong_from_u32(jungseong_code: &u32) -> Vec<u32> {
@@ -56,25 +64,18 @@ impl Jungseong {
       _ => unreachable!(),
     }
   }
-
-  fn is_jungseong_from_u32(jungseong_code: u32) -> bool {
-    const JUNGSEONG_BASE: u32 = 0x1161;
-    const JUNGSEONG_LAST: u32 = 0x1175;
-    JUNGSEONG_BASE <= jungseong_code && jungseong_code <= JUNGSEONG_LAST
-  }
 }
 
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::nfd::Nfd;
 
   #[test]
   fn test_jungseong() {
-    use crate::nfd::Nfd;
-
     let letter = '궐';
-    let Nfd(_, jungseong_code, _) = Nfd::normalize_from_u32(letter as u32).unwrap();
-    let jungseong = Jungseong::new_from_u32(jungseong_code).unwrap();
+    let Nfd(_, jungseong_code, _) = Nfd::normalize(letter as u32);
+    let jungseong = Jungseong::new_from_u32(jungseong_code);
 
     assert_eq!(
       jungseong
@@ -85,7 +86,7 @@ mod tests {
       "ㅜㅓ"
         .chars()
         // Mac OS에서 글자 하나의 자음마다 0x1FEE 값 만큼 더해지는 버그가 있다.
-        .map(|c| if Jungseong::is_jungseong_from_u32(c as u32) {
+        .map(|c| if is_jungseong_from_u32(c as u32) {
           c as u32
         } else {
           c as u32 - 0x1FEE

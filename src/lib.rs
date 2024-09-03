@@ -8,3 +8,5 @@ mod jongseong;
 mod jungseong;
 #[allow(dead_code)]
 mod nfd;
+#[allow(dead_code)]
+mod utils;
