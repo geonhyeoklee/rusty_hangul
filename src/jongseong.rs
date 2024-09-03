@@ -1,3 +1,5 @@
+use crate::utils::is_jongseong_from_u32;
+
 #[derive(Debug)]
 pub struct Jongseong {
   pub value: char,
@@ -12,7 +14,7 @@ impl Jongseong {
   }
 
   fn maybe_new_from_u32(unicode: u32) -> Option<Self> {
-    if !Self::is_jongseong_from_u32(unicode) {
+    if !is_jongseong_from_u32(unicode) {
       return None;
     }
 
@@ -68,12 +70,6 @@ impl Jongseong {
       0x11C2 => vec![0x11C2],         // "ㅎ",
       _ => unreachable!(),
     }
-  }
-
-  fn is_jongseong_from_u32(jongseong_code: u32) -> bool {
-    const JONGSEONG_BASE: u32 = 0x11A8;
-    const JONGSEONG_LAST: u32 = 0x11C2;
-    JONGSEONG_BASE <= jongseong_code && jongseong_code <= JONGSEONG_LAST
   }
 }
 

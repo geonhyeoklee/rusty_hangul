@@ -31,6 +31,36 @@ impl Decompose {
       })
       .collect()
   }
+
+  pub fn get_choseong(string: String) -> String {
+    string
+      .chars()
+      .map(|letter| {
+        let decomposed_hangul = DecomposedHangul::new(letter);
+        if let Some(decomposed_hangul) = decomposed_hangul {
+          let choseong = decomposed_hangul.choseong.value;
+          return choseong;
+        } else {
+          return letter;
+        }
+      })
+      .collect()
+  }
+
+  pub fn has_batchim(mut string: String) -> bool {
+    let maybe_last_char = string.pop();
+
+    if let Some(last_char) = maybe_last_char {
+      let decomposed_hangul = DecomposedHangul::new(last_char);
+      if let Some(decomposed_hangul) = decomposed_hangul {
+        decomposed_hangul.jongseong.is_some()
+      } else {
+        false
+      }
+    } else {
+      false
+    }
+  }
 }
 
 #[derive(Debug)]
@@ -72,6 +102,13 @@ impl DecomposedHangul {
 #[cfg(test)]
 mod tests {
   use super::*;
+
+  #[test]
+  fn test_get_choseong() {
+    let testcase = "버그가 싫다.".to_string();
+    let result = Decompose::get_choseong(testcase);
+    println!("{:?}", result);
+  }
 
   #[test]
   fn test_decompose_to_groups() {
