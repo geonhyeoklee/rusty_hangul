@@ -1,5 +1,4 @@
 const HANGUL_BASE: u32 = 0xAC00;
-// const HANGUL_LAST: u32 = 0xD7A3;
 
 const CHOSEONG_COUNT: u32 = 0x13;
 const JUNGSEONG_COUNT: u32 = 0x15;

@@ -34,14 +34,14 @@ impl Decompose {
 }
 
 #[derive(Debug)]
-pub struct DecomposedHangul {
+struct DecomposedHangul {
   choseong: Choseong,
   jungseong: Jungseong,
   jongseong: Option<Jongseong>,
 }
 
 impl DecomposedHangul {
-  pub fn new(letter: char) -> Option<DecomposedHangul> {
+  fn new(letter: char) -> Option<DecomposedHangul> {
     Self::new_inner(letter)
   }
 
