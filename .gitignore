@@ -199,3 +199,11 @@ prompts/**/*.md
 AGENTS.md
 CLAUDE.md
 .cursor/
+.cursor-chat-history/
+.claude/
+.codex/
+.grok/
+.continue/
+.windsurf/
+.aider.input.history
+.aider.chat.history.md
