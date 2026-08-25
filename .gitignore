@@ -198,3 +198,4 @@ AI.md
 prompts/**/*.md
 AGENTS.md
 CLAUDE.md
+.cursor/
